@@ -12,54 +12,55 @@ The deployment steps shown here use Bash shell commands. On Windows, you can use
 - [Azure Function Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#v3)
 - (Optional) [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) for local testing and viewing the contents of the remote/local storage folders containing speech and transcribed data.
 
-## Clone this repo locally.
+## Clone this repo locally
 
-    ```bash
-    git clone https://github.com/mspnp/cognitive-services-reference-implementation.git my-local-folder && \
-    cd my-local-folder
-    ```
-- If you have multiple Azure subscriptions, make sure that the subscription that you want to use for this deployment is set as default. Login to your Azure account and set the subscription.
-    
-    ```bash
-    az login
-    az account set -s [YOUR_SUBSCRIPTION_ID]
-    ```
+```bash
+git clone https://github.com/mspnp/cognitive-services-reference-implementation.git my-local-folder && \
+cd my-local-folder
+```
+
+If you have multiple Azure subscriptions, make sure that the subscription that you want to use for this deployment is set as default. Login to your Azure account and set the subscription.
+
+```bash
+az login
+az account set -s [YOUR_SUBSCRIPTION_ID]
+```
 
 ## Deploy the Cognitive Services Reference Implementation
 
 ### Deploy an Azure Key Vault for storing secrets
 
-#### Set environment variables. 
+#### Set environment variables
 
 ```bash
-export KEY_VAULT_RESOURCE_GROUP_NAME=[YOUR_KEYVAULT_RESOURCE_GROUP_NAME] 
+export KEY_VAULT_RESOURCE_GROUP_NAME=[YOUR_KEYVAULT_RESOURCE_GROUP_NAME]
 export LOCATION=[YOUR_LOCATION_HERE]
 export USER_EMAIL=[YOUR_USER_EMAIL]
 export KEYVAULT_TEMPLATE_FILE=./azuredeploy-keyvault.json
 export KEYVAULT_NAME=[YOUR_KEYVAULT_NAME]
 ```
 
-#### Get the object ID of the current user or a specific user.
+#### Get the object ID of the current user or a specific user
 
 ```bash
 OBJECT_ID=$(az ad user show --id $USER_EMAIL --query objectId --output tsv)
 ```
 
-#### Get the tenant ID for your subscription.
+#### Get the tenant ID for your subscription
 
 ```bash
 TENANT_ID=$(az account show | jq -r '.tenantId')
 ```
 
-#### Create a resource group in the specified region.
+#### Create a resource group in the specified region
 
 ```bash
 az group create -n $KEY_VAULT_RESOURCE_GROUP_NAME -l $LOCATION
 ```
 
 #### Deploy key vault.
-    
-```bash 
+
+```bash
 az deployment group create \
     -g $KEY_VAULT_RESOURCE_GROUP_NAME \
     --template-file $KEYVAULT_TEMPLATE_FILE \
@@ -71,8 +72,8 @@ az deployment group create \
 
 ### Deploy Cognitive Services
 
-#### Create a service principal for user delegation SAS token.
-    
+#### Create a service principal for user delegation SAS token
+
 ```bash
 export SP_DETAILS=$(az ad sp create-for-rbac -n "speech-uploader-sp" --skip-assignment -o json) && \
 export SP_APP_ID=$(echo $SP_DETAILS | jq ".appId" -r) && \
@@ -80,7 +81,7 @@ export SP_CLIENT_SECRET=$(echo $SP_DETAILS | jq ".password" -r) && \
 export SP_OBJECT_ID=$(az ad sp show --id $SP_APP_ID -o tsv --query objectId)
 ```
 
-#### Deploy cognitive services deployment template.
+#### Deploy cognitive services deployment template
 
 ```bash
 export RESOURCE_GROUP_NAME=[YOUR_RESOURCE_GROUP_NAME]
@@ -106,6 +107,7 @@ az deployment group create \
 ```
 
 #### Build and deploy function app
+
 ```bash
 cd ./my-local-folder/src/infra \
 && func pack --build-native-deps \
@@ -117,7 +119,9 @@ cd ./my-local-folder/src/infra \
 ```
 
 #### Run the SAS token based uploader application
+
 ```bash
 cd ./my-local-folder/src/jsloader
 npm run build
 npm start
+```
