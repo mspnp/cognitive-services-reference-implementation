@@ -10,7 +10,8 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "command": "npm run build"
+            "command": "npm run build",
+            "problemMatcher": []
         }
     ]
 }
