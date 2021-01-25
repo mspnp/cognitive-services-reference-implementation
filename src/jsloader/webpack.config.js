@@ -13,6 +13,13 @@ module.exports = {
     libraryTarget: "var",
     library: "blob"
   },
+  resolve: { 
+    fallback: { 
+        "crypto": require.resolve("crypto-browserify"),
+        "buffer": require.resolve("buffer/"),
+        "stream": require.resolve("stream-browserify")
+    }
+  },
   mode: "development",
   plugins: [
     new HtmlWebpackPlugin({
