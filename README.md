@@ -16,7 +16,7 @@ The deployment steps shown here use Bash shell commands. On Windows, you can use
 
 ```bash
 git clone https://github.com/mspnp/cognitive-services-reference-implementation.git my-local-folder && \
-cd my-local-folder
+cd my-local-folder/src
 ```
 
 If you have multiple Azure subscriptions, make sure that the subscription that you want to use for this deployment is set as default. Login to your Azure account and set the subscription.
@@ -109,7 +109,7 @@ az deployment group create \
 #### Build and deploy function app
 
 ```bash
-cd ./my-local-folder/src/infra \
+cd ./infra \
 && func pack --build-native-deps \
 && az functionapp deployment source config-zip \
       -g $RESOURCE_GROUP_NAME \
@@ -121,7 +121,7 @@ cd ./my-local-folder/src/infra \
 #### Run the SAS token based uploader application
 
 ```bash
-cd ./my-local-folder/src/jsloader
+cd ./jsloader
 npm run build
 npm start
 ```
