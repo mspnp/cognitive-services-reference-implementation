@@ -109,8 +109,6 @@
         "storageRoleAssignmentId": "[concat(variables('storageAccountAudioStorageName'), '/default/', variables('storageAccountAudioStorageContainerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountAudioStorageName'))))]",
         "storageBlobDataContributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "cognitiveServicesId": "[concat(resourceGroup().id,'/providers/','Microsoft.CognitiveServices/accounts/', parameters('cognitiveServicesAccountName'))]",
-        "identityFunctionApp": "[concat(resourceId('Microsoft.Web/sites', variables('functionAppName')), '/providers/Microsoft.ManagedIdentity/Identities/default')]",
-        "identityRestApi": "[concat(resourceId('Microsoft.Web/sites', variables('restApiName')), '/providers/Microsoft.ManagedIdentity/Identities/default')]",
         "funcStorageSecretName": "AzureWebJobsStorage",
         "audioStorageAccountSecretName": "AudioBlobConnectionString",
         "textStorageAccountSecretName": "TextBlobConnectionString",
@@ -121,7 +119,7 @@
         "keyVaultApiVersion": "2018-02-14",
         "appInsightsApiVersion": "2015-05-01",
         "cognitiveServicesApiVersion": "2017-04-18",
-        "managedIdentityApiVersion": "2018-11-30"
+        "websiteApiVersion": "2018-11-01"
     },
     "resources": [
         {
@@ -289,89 +287,206 @@
             ],
             "properties": {
                 "mode": "Incremental",
+                "expressionEvaluationOptions":{ "scope": "Inner" },
+                "parameters": {
+                    "location":{
+                        "value": "[parameters('location')]"
+                    },
+                    "keyVaultName":{
+                        "value": "[parameters('keyVaultName')]"
+                    },
+                    "keyVaultApiVersion":{
+                        "value": "[variables('keyVaultApiVersion')]"
+                    },
+                    "keyVaultResourceGroupName":{
+                        "value": "[parameters('keyVaultResourceGroupName')]"
+                    },
+                    "audioStorageAccountSecretName":{
+                        "value": "[variables('audioStorageAccountSecretName')]"
+                    },
+                    "funcStorageSecretName":{
+                        "value": "[variables('funcStorageSecretName')]"
+                    },
+                    "textStorageAccountSecretName":{
+                        "value": "[variables('textStorageAccountSecretName')]"
+                    },
+                    "storageAccountApiVersion":{
+                        "value": "[variables('storageAccountApiVersion')]"
+                    },
+                    "storageAccountAudioStorageId":{
+                        "value": "[variables('storageAccountAudioStorageId')]"
+                    },
+                    "storageAccountAudioStorageContainerName":{
+                        "value": "[variables('storageAccountAudioStorageContainerName')]"
+                    },
+                    "storageAccountAudioStorageName":{
+                        "value": "[variables('storageAccountAudioStorageName')]"
+                    },
+                    "storageAccountAzureFuncId":{
+                        "value": "[variables('storageAccountAzureFuncId')]"
+                    },
+                    "storageAccountAzureFuncName":{
+                        "value": "[variables('storageAccountAzureFuncName')]"
+                    },
+                    "cognitiveServicesApiVersion":{
+                        "value": "[variables('cognitiveServicesApiVersion')]"
+                    },
+                    "cognitiveServicesId":{
+                        "value": "[variables('cognitiveServicesId')]"
+                    },
+                    "cognitiveServiceKeySecretName":{
+                        "value": "[variables('cognitiveServiceKeySecretName')]"
+                    },
+                    "existingServicePrincipalAppId":{
+                        "value": "[parameters('existingServicePrincipalAppId')]"
+                    },
+                    "existingServicePrincipalAppPassword":{
+                        "value": "[parameters('existingServicePrincipalAppPassword')]"
+                    },
+                    "existingServicePrincipalTenantId":{
+                        "value": "[parameters('existingServicePrincipalTenantId')]"
+                    }
+                },
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
+                        "location":{
+                            "type":"string"
+                        },
+                        "keyVaultName":{
+                            "type":"string"
+                        },
+                        "keyVaultApiVersion":{
+                            "type":"string"
+                        },
+                        "keyVaultResourceGroupName":{
+                            "type":"string"
+                        },
+                        "audioStorageAccountSecretName":{
+                            "type":"string"
+                        },
+                        "funcStorageSecretName":{
+                            "type":"string"
+                        },
+                        "textStorageAccountSecretName":{
+                            "type":"string"
+                        },
+                        "storageAccountApiVersion":{
+                            "type":"string"
+                        },
+                        "storageAccountAudioStorageId":{
+                            "type":"string"
+                        },
+                        "storageAccountAudioStorageContainerName":{
+                            "type":"string"
+                        },
+                        "storageAccountAudioStorageName":{
+                            "type":"string"
+                        },
+                        "storageAccountAzureFuncId":{
+                            "type":"string"
+                        },
+                        "storageAccountAzureFuncName":{
+                            "type":"string"
+                        },
+                        "cognitiveServicesApiVersion":{
+                            "type":"string"
+                        },
+                        "cognitiveServicesId":{
+                            "type":"string"
+                        },
+                        "cognitiveServiceKeySecretName":{
+                            "type":"string"
+                        },
+                        "existingServicePrincipalAppId":{
+                            "type":"string"
+                        },
+                        "existingServicePrincipalAppPassword":{
+                            "type":"securestring"
+                        },
+                        "existingServicePrincipalTenantId":{
+                            "type":"string"
+                        }
                     },
                     "variables": {
                     },
                     "resources": [
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
-                            "name": "[concat(parameters('keyVaultName'), '/', variables('audioStorageAccountSecretName'))]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
+                            "name": "[concat(parameters('keyVaultName'), '/', parameters('audioStorageAccountSecretName'))]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountAudioStorageName'), ';AccountKey=', listKeys(variables('storageAccountAudioStorageId'), variables('storageAccountApiVersion')).keys[0].value)]"
+                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountAudioStorageName'), ';AccountKey=', listKeys(parameters('storageAccountAudioStorageId'), parameters('storageAccountApiVersion')).keys[0].value)]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
-                            "name": "[concat(parameters('keyVaultName'), '/', variables('funcStorageSecretName'))]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
+                            "name": "[concat(parameters('keyVaultName'), '/', parameters('funcStorageSecretName'))]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountAzureFuncName'), ';AccountKey=', listKeys(variables('storageAccountAzureFuncId'), variables('storageAccountApiVersion')).keys[0].value)]"
+                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountAzureFuncName'), ';AccountKey=', listKeys(parameters('storageAccountAzureFuncId'), parameters('storageAccountApiVersion')).keys[0].value)]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
-                            "name": "[concat(parameters('keyVaultName'), '/', variables('cognitiveServiceKeySecretName'))]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
+                            "name": "[concat(parameters('keyVaultName'), '/', parameters('cognitiveServiceKeySecretName'))]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[listKeys(variables('cognitiveServicesId'), variables('cognitiveServicesApiVersion')).key1]"
+                                "value": "[listKeys(parameters('cognitiveServicesId'), parameters('cognitiveServicesApiVersion')).key1]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
                             "name": "[concat(parameters('keyVaultName'), '/StorageAccount--ConnectionKey')]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[listKeys(variables('storageAccountAudioStorageId'), variables('storageAccountApiVersion')).keys[0].value]"
+                                "value": "[listKeys(parameters('storageAccountAudioStorageId'), parameters('storageAccountApiVersion')).keys[0].value]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
                             "name": "[concat(parameters('keyVaultName'), '/StorageAccount--ConnectionString')]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountAudioStorageName'), ';AccountKey=', listKeys(variables('storageAccountAudioStorageId'), variables('storageAccountApiVersion')).keys[0].value)]"
+                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountAudioStorageName'), ';AccountKey=', listKeys(parameters('storageAccountAudioStorageId'), parameters('storageAccountApiVersion')).keys[0].value)]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
                             "name": "[concat(parameters('keyVaultName'), '/StorageAccount--ContainerName')]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[variables('storageAccountAudioStorageContainerName')]"
+                                "value": "[parameters('storageAccountAudioStorageContainerName')]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
                             "name": "[concat(parameters('keyVaultName'), '/StorageAccount--Name')]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[variables('storageAccountAudioStorageName')]"
+                                "value": "[parameters('storageAccountAudioStorageName')]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
-                            "name": "[concat(parameters('keyVaultName'), '/', variables('textStorageAccountSecretName'))]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
+                            "name": "[concat(parameters('keyVaultName'), '/', parameters('textStorageAccountSecretName'))]",
                             "location": "[parameters('location')]",
                             "properties": {
-                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountAudioStorageName'), ';AccountKey=', listKeys(variables('storageAccountAudioStorageId'), variables('storageAccountApiVersion')).keys[0].value)]"
+                                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountAudioStorageName'), ';AccountKey=', listKeys(parameters('storageAccountAudioStorageId'), parameters('storageAccountApiVersion')).keys[0].value)]"
                             }
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
                             "name": "[concat(parameters('keyVaultName'), '/UserDelegation--ClientId')]",
                             "location": "[parameters('location')]",
                             "properties": {
@@ -380,7 +495,7 @@
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
                             "name": "[concat(parameters('keyVaultName'), '/UserDelegation--ClientSecret')]",
                             "location": "[parameters('location')]",
                             "properties": {
@@ -389,7 +504,7 @@
                         },
                         {
                             "type": "Microsoft.KeyVault/vaults/secrets",
-                            "apiVersion": "[variables('keyVaultApiVersion')]",
+                            "apiVersion": "[parameters('keyVaultApiVersion')]",
                             "name": "[concat(parameters('keyVaultName'), '/UserDelegation--TenantId')]",
                             "location": "[parameters('location')]",
                             "properties": {
@@ -400,19 +515,19 @@
                     "outputs": {
                         "funcStorageSecretId": {
                             "type": "object",
-                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('funcStorageSecretName')), variables('keyVaultApiVersion'))]"
+                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('funcStorageSecretName')), parameters('keyVaultApiVersion'))]"
                         },
                         "storageAccountAudioStorageSecretId": {
                             "type": "object",
-                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('audioStorageAccountSecretName')), variables('keyVaultApiVersion'))]"
+                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('audioStorageAccountSecretName')), parameters('keyVaultApiVersion'))]"
                         },
                         "storageAccountTextStorageSecretId": {
                             "type": "object",
-                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('textStorageAccountSecretName')), variables('keyVaultApiVersion'))]"
+                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('textStorageAccountSecretName')), parameters('keyVaultApiVersion'))]"
                         },
                         "cognitiveServiceKeySecretId": {
                             "type": "object",
-                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'), 'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('cognitiveServiceKeySecretName')), variables('keyVaultApiVersion'))]"
+                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroupName'), 'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('cognitiveServiceKeySecretName')), parameters('keyVaultApiVersion'))]"
                         }
                     }
                 }
@@ -424,8 +539,8 @@
             "name": "[variables('deployKeyVaultAccessPolicies')]",
             "resourceGroup": "[parameters('keyVaultResourceGroupName')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
-                "[resourceId('Microsoft.Web/sites', variables('restApiName'))]"
+                "[variables('functionAppName')]",
+                "[variables('restApiName')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -445,7 +560,7 @@
                                 "accessPolicies": [
                                     {
                                         "tenantId": "[subscription().tenantId]",
-                                        "objectId": "[reference(variables('identityFunctionApp'), variables('managedIdentityApiVersion')).principalId]",
+                                        "objectId": "[reference(variables('functionAppName'), variables('websiteApiVersion'), 'Full').identity.principalId]",
                                         "permissions": {
                                             "keys": [
                                             ],
@@ -459,7 +574,7 @@
                                     },
                                     {
                                         "tenantId": "[subscription().tenantId]",
-                                        "objectId": "[reference(variables('identityRestApi'), variables('managedIdentityApiVersion')).principalId]",
+                                        "objectId": "[reference(variables('restApiName'), variables('websiteApiVersion'), 'Full').identity.principalId]",
                                         "permissions": {
                                             "keys": [
                                             ],
@@ -524,7 +639,7 @@
         },
         {
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "[variables('websiteApiVersion')]",
             "name": "[variables('restApiName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -564,17 +679,12 @@
         },
         {
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "[variables('websiteApiVersion')]",
             "name": "[variables('functionAppName')]",
             "location": "[parameters('location')]",
             "kind": "functionapp",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppHostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountAzureFuncName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountAudioStorageName'))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServicesAccountName'))]",
-                "[resourceId('Microsoft.Insights/components/', variables('applicationInsightsName'))]",
-                "[variables('deployKeyvaultSecretsName')]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('functionAppHostingPlanName'))]"
             ],
             "identity": {
                 "type": "SystemAssigned"
@@ -602,9 +712,14 @@
 
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
+                        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountAzureFuncName'))]",
+                        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountAudioStorageName'))]",
+                        "[resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServicesAccountName'))]",
+                        "[resourceId('Microsoft.Insights/components/', variables('applicationInsightsName'))]",
+                        "[variables('deployKeyvaultSecretsName')]",
                         "[variables('deployKeyVaultAccessPolicies')]"
                     ],
-                    "apiVersion": "2018-11-01"
+                    "apiVersion": "[variables('websiteApiVersion')]"
                 }
 
             ]
