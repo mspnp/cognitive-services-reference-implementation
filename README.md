@@ -9,8 +9,10 @@ The deployment steps shown here use Bash shell commands. On Windows, you can use
 ## Prerequisites
 
 - Azure subscription
-- [Azure Function Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#v3)
-- (Optional) [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) for local testing and viewing the contents of the remote/local storage folders containing speech and transcribed data.
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) (must be at least 2.37)
+- [jq](https://stedolan.github.io/jq/download/)
+- [Azure Function Core Tools](https://docs.microsoft.com/azure/azure-functions/functions-run-local#v3)
+- (Optional) [Azure Storage Explorer](https://azure.microsoft.com/features/storage-explorer/) for local testing and viewing the contents of the remote/local storage folders containing speech and transcribed data.
 
 ## Clone this repo locally
 
@@ -43,13 +45,13 @@ export KEYVAULT_NAME=[YOUR_KEYVAULT_NAME]
 #### Get the object ID of the current user or a specific user
 
 ```bash
-OBJECT_ID=$(az ad user show --id $USER_EMAIL --query objectId --output tsv)
+OBJECT_ID=$(az ad user show --id $USER_EMAIL --query id --output tsv)
 ```
 
 #### Get the tenant ID for your subscription
 
 ```bash
-TENANT_ID=$(az account show | jq -r '.tenantId')
+TENANT_ID=$(az account show --query tenantId -o tsv)
 ```
 
 #### Create a resource group in the specified region
@@ -78,7 +80,7 @@ az deployment group create \
 export SP_DETAILS=$(az ad sp create-for-rbac -n "speech-uploader-sp" --skip-assignment -o json) && \
 export SP_APP_ID=$(echo $SP_DETAILS | jq ".appId" -r) && \
 export SP_CLIENT_SECRET=$(echo $SP_DETAILS | jq ".password" -r) && \
-export SP_OBJECT_ID=$(az ad sp show --id $SP_APP_ID -o tsv --query objectId)
+export SP_OBJECT_ID=$(az ad sp show --id $SP_APP_ID -o tsv --query id)
 ```
 
 #### Deploy cognitive services deployment template
